@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Garage Drive</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div class="hud">
+      <div class="speed"><b id="speed">0</b><span>km/h</span></div>
+      <div class="keys">
+        <p><kbd>W</kbd><kbd>↑</kbd> accelerate · <kbd>S</kbd><kbd>↓</kbd> brake / reverse</p>
+        <p><kbd>A</kbd><kbd>←</kbd> <kbd>D</kbd><kbd>→</kbd> steer · <kbd>Space</kbd> handbrake</p>
+        <p><kbd>C</kbd> camera · <kbd>L</kbd> headlights · <kbd>H</kbd> horn · <kbd>R</kbd> reset</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
