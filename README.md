@@ -49,3 +49,7 @@ Gamepad: right trigger gas, left trigger brake, left stick steer, A handbrake, Y
 - `src/effects.ts`: skid marks and smoke
 - `src/sound.ts`: engine and tyre audio
 - `src/main.ts`: renderer, post-processing, input, camera, HUD
+
+## Deploy
+
+`npm run deploy` builds the project and publishes `dist/` to the `gh-pages` branch. In the repo settings, set Pages to serve from that branch.
