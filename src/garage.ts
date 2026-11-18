@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { Reflector } from 'three/examples/jsm/objects/Reflector.js'
 
 export const ROOM = { w: 26, d: 32, h: 7 }
 
@@ -67,12 +68,23 @@ export function buildGarage(scene: THREE.Scene) {
     ctx.lineWidth = 3
     ctx.strokeRect(0, 0, s, s)
   }, [w / 6, d / 6])
+  // Real mirror under a semi-transparent concrete layer = polished, reflective floor.
+  const reflector = new Reflector(new THREE.PlaneGeometry(w, d), {
+    textureWidth: Math.round(innerWidth * 0.6),
+    textureHeight: Math.round(innerHeight * 0.6),
+    color: 0x6f737a,
+    clipBias: 0.003,
+  })
+  reflector.rotation.x = -Math.PI / 2
+  reflector.position.y = -0.003
+  scene.add(reflector)
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(w, d),
-    new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.38, metalness: 0.15 }),
+    new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 0.8 }),
   )
   floor.rotation.x = -Math.PI / 2
   floor.receiveShadow = true
+  floor.renderOrder = -1
   scene.add(floor)
 
   // Painted bay outline + centre arrows on the floor.
@@ -167,7 +179,7 @@ export function buildGarage(scene: THREE.Scene) {
   scene.add(strip)
 
   // ---- Ceiling lights ------------------------------------------------------
-  const tubeMat = new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#fff4e0', emissiveIntensity: 2.2 })
+  const tubeMat = new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#fff4e0', emissiveIntensity: 7 })
   const lightZ = [-9, -1.5, 6, 12]
   for (const z of lightZ) {
     for (const x of [-5, 5]) {
@@ -179,7 +191,7 @@ export function buildGarage(scene: THREE.Scene) {
   scene.add(hemi)
   const shadowSpots: THREE.SpotLight[] = []
   ;[-6, 4].forEach((z, i) => {
-    const s = new THREE.SpotLight('#fff1dc', 420, 26, Math.PI / 2.6, 0.7, 1.4)
+    const s = new THREE.SpotLight('#fff1dc', 300, 26, Math.PI / 2.6, 0.7, 1.4)
     s.position.set(0, h - 0.6, z)
     s.target.position.set(0, 0, z)
     s.castShadow = i === 1
@@ -293,5 +305,5 @@ export function buildGarage(scene: THREE.Scene) {
   signMesh.position.set(3, 4.6, -hd + 0.03)
   scene.add(signMesh)
 
-  return { shadowSpots }
+  return { shadowSpots, reflector }
 }
