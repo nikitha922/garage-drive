@@ -13,6 +13,29 @@ export interface Box2 {
 }
 export const obstacles: Box2[] = []
 
+/** A prop that becomes a physics body (built in props.ts). */
+export interface Spawn {
+  kind: 'box' | 'barrel' | 'tyres'
+  x: number
+  y: number // height of the bottom above the floor
+  z: number
+  w: number
+  h: number
+  d: number
+  color: string
+  mass: number
+  shelf?: number // index of the shelving unit it sits on
+}
+
+/** A shelving unit whose boxes can be knocked off. */
+export interface ShelfUnit {
+  group: THREE.Group
+  minX: number
+  maxX: number
+  minZ: number
+  maxZ: number
+}
+
 function canvasTexture(size: number, draw: (ctx: CanvasRenderingContext2D, s: number) => void, repeat?: [number, number]) {
   const c = document.createElement('canvas')
   c.width = c.height = size
@@ -212,7 +235,9 @@ export function buildGarage(scene: THREE.Scene) {
   const crate = std('#a3794a', 0.85)
   const red = std('#c0302b', 0.5, 0.3)
 
-  // Shelving unit with boxes along the left wall.
+  // Shelving units along the left wall. The boxes on them are physics props (see props.ts).
+  const spawns: Spawn[] = []
+  const shelves: ShelfUnit[] = []
   for (let k = 0; k < 3; k++) {
     const z = -8 + k * 3.6
     const g = new THREE.Group()
@@ -223,11 +248,23 @@ export function buildGarage(scene: THREE.Scene) {
       for (let n = 0; n < 3; n++) {
         if (Math.random() > 0.25) {
           const bw = 0.5 + Math.random() * 0.25
-          g.add(box(bw, 0.4 + Math.random() * 0.2, 0.8 + Math.random() * 0.3, Math.random() > 0.5 ? crate : red, (Math.random() - 0.5) * 0.3, 0.5 + lvl * 0.95, -1.1 + n * 1.05))
+          spawns.push({
+            kind: 'box',
+            x: g.position.x + (Math.random() - 0.5) * 0.3,
+            y: 0.285 + lvl * 0.95,
+            z: z - 1.1 + n * 1.05,
+            w: bw,
+            h: 0.4 + Math.random() * 0.2,
+            d: 0.8 + Math.random() * 0.3,
+            color: Math.random() > 0.5 ? '#a3794a' : '#c0302b',
+            mass: 0.4,
+            shelf: k,
+          })
         }
       }
     }
     solid(scene, g, 1.4, 3.4)
+    shelves.push({ group: g, minX: g.position.x - 0.7, maxX: g.position.x + 0.7, minZ: z - 1.7, maxZ: z + 1.7 })
   }
 
   // Workbench with vice + tool chest on the back wall.
@@ -255,36 +292,14 @@ export function buildGarage(scene: THREE.Scene) {
     scene.add(tool)
   }
 
-  // Tyre stack + barrels on the right side.
-  const tyreMat = std('#171717', 0.9)
-  const tyres = new THREE.Group()
-  tyres.position.set(hw - 1.6, 0, -hd + 2.2)
-  for (let i = 0; i < 4; i++) {
-    const t = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.2, 14, 28), tyreMat)
-    t.rotation.x = Math.PI / 2
-    t.position.y = 0.2 + i * 0.4
-    t.castShadow = true
-    tyres.add(t)
-  }
-  solid(scene, tyres, 1.3, 1.3)
-
-  const barrelMat = std('#2554a0', 0.45, 0.5)
+  // Loose props the car and the driver can shove around.
+  spawns.push({ kind: 'tyres', x: hw - 1.6, y: 0, z: -hd + 2.2, w: 1.24, h: 1.6, d: 1.24, color: '#171717', mass: 0.9 })
   ;[
-    [hw - 1.4, 2.5],
-    [hw - 1.4, 3.8],
-    [hw - 2.7, 3.2],
-  ].forEach(([x, z], i) => {
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.3, 24), i === 2 ? std('#b53a2b', 0.45, 0.5) : barrelMat)
-    b.position.set(x, 0.65, z)
-    b.castShadow = b.receiveShadow = true
-    solid(scene, b, 1.0, 1.0)
-  })
-
-  // Rolling jack stand + crate near the door.
-  const crates = new THREE.Mesh(new RoundedBoxGeometry(1.4, 1.1, 1.4, 3, 0.05), crate)
-  crates.position.set(hw - 1.5, 0.55, 11)
-  crates.castShadow = crates.receiveShadow = true
-  solid(scene, crates, 1.4, 1.4)
+    [hw - 1.4, 2.5, '#2554a0'],
+    [hw - 1.4, 3.8, '#2554a0'],
+    [hw - 2.7, 3.2, '#b53a2b'],
+  ].forEach(([x, z, color]) => spawns.push({ kind: 'barrel', x: x as number, y: 0, z: z as number, w: 1, h: 1.3, d: 1, color: color as string, mass: 1 }))
+  spawns.push({ kind: 'box', x: hw - 1.5, y: 0, z: 11, w: 1.4, h: 1.1, d: 1.4, color: '#a3794a', mass: 1.6 })
 
   // Neon-style sign above the bench (pure decoration).
   const sign = canvasTexture(512, (ctx, s) => {
@@ -305,5 +320,5 @@ export function buildGarage(scene: THREE.Scene) {
   signMesh.position.set(3, 4.6, -hd + 0.03)
   scene.add(signMesh)
 
-  return { shadowSpots, reflector }
+  return { shadowSpots, reflector, spawns, shelves }
 }

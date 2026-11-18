@@ -18,6 +18,7 @@ npm run dev
 - Synthesised engine, tyre squeal and horn (WebAudio)
 - Sport / Eco drive modes, 6 paint colours, 4 cameras including a free orbit photo mode
 - A driver who steps out of the car (door swings open), walks around the garage and can get back in
+- Physical props: shove barrels, tyres and crates with the car or on foot; crash into a shelf and its boxes tumble off; pick up, carry and throw boxes
 - Keyboard, gamepad and touch controls
 
 ## Controls
@@ -34,6 +35,7 @@ npm run dev
 | 1-6 | Paint colour |
 | H | Horn |
 | K | Engine on / off (off = no drive, car coasts to a stop, engine sound stops) |
+| F | On foot: pick up the nearest box, press again to drop (hold Shift to throw) |
 | E | Get out of / back into the car (on foot: W/S walk, A/D turn, Shift run) |
 | Q | Toggle effects (use if it runs slowly) |
 | M | Mute |
@@ -45,6 +47,7 @@ Gamepad: right trigger gas, left trigger brake, left stick steer, A handbrake, Y
 
 - `src/garage.ts`: room, lighting, reflective floor, props and collision footprints
 - `src/car.ts`: car model and driving physics
+- `src/props.ts`: physics for boxes, barrels and tyres (shoving, shelf knock-off, carry/throw)
 - `src/person.ts`: the driver model, exit/enter animation and on-foot walking
 - `src/effects.ts`: skid marks and smoke
 - `src/sound.ts`: engine and tyre audio

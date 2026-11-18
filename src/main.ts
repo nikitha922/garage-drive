@@ -10,6 +10,7 @@ import { Car, PAINTS, type Controls } from './car'
 import { Effects } from './effects'
 import { buildGarage } from './garage'
 import { Person, type WalkInput } from './person'
+import { Props } from './props'
 import { Sound } from './sound'
 
 const $ = (id: string) => document.getElementById(id)!
@@ -31,10 +32,11 @@ const pmrem = new THREE.PMREMGenerator(renderer)
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
 scene.environmentIntensity = 0.45
 
-const { reflector } = buildGarage(scene)
+const { reflector, spawns, shelves } = buildGarage(scene)
 const car = new Car()
 scene.add(car.group)
 const person = new Person(scene)
+const props = new Props(scene, spawns, shelves)
 const fx = new Effects(scene)
 const sound = new Sound()
 
@@ -115,10 +117,19 @@ function act(k: string) {
   else if (k === 'e') {
     if (person.state === 'inside') {
       if (car.speed < 1.2) person.exit(car)
-    } else person.tryEnter(car)
+    } else {
+      props.drop(person, false)
+      person.tryEnter(car)
+    }
+  } else if (k === 'f') {
+    if (person.state === 'onfoot') {
+      if (props.carrying) props.drop(person, held.has('shift'))
+      else props.pick(person)
+    }
   }
   else if (k === 'r') {
     car.reset()
+    props.reset()
     fx.clearSkids()
   } else if (/^[1-6]$/.test(k)) setPaint(Number(k) - 1)
 }
@@ -262,6 +273,8 @@ renderer.setAnimationLoop(() => {
   const c = readControls()
   const hit = car.update(dt, c)
   person.update(dt, car, readWalk())
+  const thump = props.update(dt, car, person)
+  if (thump > 0) sound.thud(thump)
   if (hit && car.speed > 2) shake = Math.min(0.2, car.speed * 0.02)
 
   // Skid marks, smoke and drift scoring.
@@ -290,7 +303,11 @@ renderer.setAnimationLoop(() => {
 
   let prompt = ''
   if (person.state === 'inside') prompt = !car.engineOn ? 'Engine off — press K to start' : car.speed < 1.2 ? 'Press E to get out · K to turn the engine off' : ''
-  else if (person.state === 'onfoot') prompt = person.distanceToDoor(car) < 4 ? 'Press E to get in' : 'W / S walk · A / D turn · Shift run — go back to the door and press E'
+  else if (person.state === 'onfoot') {
+    if (props.carrying) prompt = 'F drop · Shift + F throw'
+    else if (props.pickCandidate(person)) prompt = 'Press F to pick up the box'
+    else prompt = person.distanceToDoor(car) < 4 ? 'Press E to get in' : 'W / S walk · A / D turn · Shift run — go back to the door and press E'
+  }
   promptEl.textContent = prompt
   promptEl.classList.toggle('show', prompt !== '')
 

@@ -27,6 +27,8 @@ export class Person {
   readonly group = new THREE.Group()
   state: State = 'inside'
   heading = 0
+  /** Ground velocity in m/s (used when shoving props). */
+  velocity = { x: 0, z: 0 }
 
   private rig = new THREE.Group()
   private torso = new THREE.Group()
@@ -181,6 +183,14 @@ export class Person {
   }
 
   update(dt: number, car: Car, input: WalkInput) {
+    const x0 = this.group.position.x
+    const z0 = this.group.position.z
+    this.step(dt, car, input)
+    this.velocity.x = (this.group.position.x - x0) / Math.max(dt, 1e-3)
+    this.velocity.z = (this.group.position.z - z0) / Math.max(dt, 1e-3)
+  }
+
+  private step(dt: number, car: Car, input: WalkInput) {
     switch (this.state) {
       case 'inside':
         car.door += (0 - car.door) * Math.min(1, dt * 5)

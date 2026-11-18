@@ -59,6 +59,23 @@ export class Sound {
     this.squeal.gain.setTargetAtTime(this.muted ? 0 : Math.min(0.12, Math.max(0, slip - 2.5) * 0.03), t, 0.05)
   }
 
+  /** A low thump for crashes and falling boxes. strength ~0..1 */
+  thud(strength: number) {
+    if (!this.ctx || this.muted) return
+    const ctx = this.ctx
+    const t = ctx.currentTime
+    const o = ctx.createOscillator()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(150, t)
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.18)
+    const g = ctx.createGain()
+    g.gain.setValueAtTime(Math.min(0.35, 0.08 + strength * 0.3), t)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22)
+    o.connect(g).connect(ctx.destination)
+    o.start(t)
+    o.stop(t + 0.25)
+  }
+
   toggleMute() {
     this.muted = !this.muted
     return this.muted

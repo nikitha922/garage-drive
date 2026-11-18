@@ -65,6 +65,8 @@ export class Car {
   rpm = 0.15
   /** Driver's door opening, 0 (shut) .. 1 (open). */
   door = 0
+  /** Speed at the moment of the last collision (0 when nothing was hit this frame). */
+  impact = 0
   gear = 'N'
 
   private frontPivots: THREE.Object3D[] = []
@@ -303,6 +305,7 @@ export class Car {
     const nextHeading = this.heading + yaw * dt
 
     const p = this.group.position
+    const preSpeed = Math.hypot(this.vx, this.vz)
     let hit = false
     if (!this.blocked(p.x + this.vx * dt, p.z, nextHeading)) p.x += this.vx * dt
     else {
@@ -321,6 +324,7 @@ export class Car {
       this.vz *= 0.6
     }
 
+    this.impact = hit ? preSpeed : 0
     this.forward = this.vx * Math.sin(this.heading) + this.vz * Math.cos(this.heading)
     this.slip = Math.abs(this.vx * Math.cos(this.heading) - this.vz * Math.sin(this.heading))
 
