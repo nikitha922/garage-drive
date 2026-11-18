@@ -104,6 +104,10 @@ function act(k: string) {
   if (k === 'c') setCam(camMode + 1)
   else if (k === 'l') car.toggleHeadlights()
   else if (k === 'u') car.toggleUnderglow()
+  else if (k === 'k') {
+    $('engine').textContent = car.toggleEngine() ? 'ENGINE ON' : 'ENGINE OFF'
+    $('engine').classList.toggle('off', !car.engineOn)
+  }
   else if (k === 't') $('mode').textContent = (car.toggleMode(), car.mode.toUpperCase())
   else if (k === 'q') setQuality(!quality)
   else if (k === 'm') $('mute').textContent = sound.toggleMute() ? 'MUTED' : 'SOUND'
@@ -285,12 +289,12 @@ renderer.setAnimationLoop(() => {
   driftEl.classList.toggle('live', driftScore > 5)
 
   let prompt = ''
-  if (person.state === 'inside') prompt = car.speed < 1.2 ? 'Press E to get out' : ''
+  if (person.state === 'inside') prompt = !car.engineOn ? 'Engine off — press K to start' : car.speed < 1.2 ? 'Press E to get out · K to turn the engine off' : ''
   else if (person.state === 'onfoot') prompt = person.distanceToDoor(car) < 4 ? 'Press E to get in' : 'W / S walk · A / D turn · Shift run — go back to the door and press E'
   promptEl.textContent = prompt
   promptEl.classList.toggle('show', prompt !== '')
 
-  sound.update(car.rpm, c.throttle, car.slip)
+  sound.update(car.rpm, c.throttle, car.slip, car.engineOn)
   updateCamera(dt)
   if (shake > 0) {
     camera.position.x += (Math.random() - 0.5) * shake

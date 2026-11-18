@@ -45,3 +45,6 @@ kbd { background: rgba(255, 255, 255, 0.12); border: 1px solid var(--line); bord
 
 .prompt { position: absolute; left: 50%; bottom: 120px; transform: translate(-50%, 6px); background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(10px); padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; opacity: 0; transition: opacity 0.2s, transform 0.2s; text-align: center; max-width: 86vw; }
 .prompt.show { opacity: 1; transform: translate(-50%, 0); }
+
+.chips #engine { color: #6ee7a8; }
+.chips #engine.off { color: #ff6b81; }

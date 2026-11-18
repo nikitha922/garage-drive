@@ -33,6 +33,7 @@ npm run dev
 | L / U | Headlights / underglow |
 | 1-6 | Paint colour |
 | H | Horn |
+| K | Engine on / off (off = no drive, car coasts to a stop, engine sound stops) |
 | E | Get out of / back into the car (on foot: W/S walk, A/D turn, Shift run) |
 | Q | Toggle effects (use if it runs slowly) |
 | M | Mute |

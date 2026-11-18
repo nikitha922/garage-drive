@@ -48,14 +48,14 @@ export class Sound {
     noise.start()
   }
 
-  update(rpm: number, throttle: number, slip: number) {
+  update(rpm: number, throttle: number, slip: number, running = true) {
     if (!this.ctx) return
     const t = this.ctx.currentTime
     const f = 38 + rpm * 120
     this.oscA.frequency.setTargetAtTime(f, t, 0.05)
     this.oscB.frequency.setTargetAtTime(f * 0.5, t, 0.05)
     this.filter.frequency.setTargetAtTime(260 + rpm * 1400 + throttle * 700, t, 0.08)
-    this.master.gain.setTargetAtTime(this.muted ? 0 : 0.05 + throttle * 0.06 + rpm * 0.03, t, 0.06)
+    this.master.gain.setTargetAtTime(this.muted || !running ? 0 : 0.05 + throttle * 0.06 + rpm * 0.03, t, running ? 0.06 : 0.15)
     this.squeal.gain.setTargetAtTime(this.muted ? 0 : Math.min(0.12, Math.max(0, slip - 2.5) * 0.03), t, 0.05)
   }
 

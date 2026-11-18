@@ -56,6 +56,7 @@ export class Car {
   steer = 0
   mode: DriveMode = 'sport'
   headlightsOn = true
+  engineOn = true
   underglowOn = false
   /** Forward speed in m/s (negative when reversing). */
   forward = 0
@@ -251,6 +252,10 @@ export class Car {
   toggleHeadlights() {
     this.headlightsOn = !this.headlightsOn
   }
+  toggleEngine() {
+    this.engineOn = !this.engineOn
+    return this.engineOn
+  }
   toggleUnderglow() {
     this.underglowOn = !this.underglowOn
   }
@@ -260,6 +265,8 @@ export class Car {
 
   /** Advance the simulation. Returns true if the car hit something. */
   update(dt: number, c: Controls): boolean {
+    // With the engine off there is no drive: the car just coasts to a stop.
+    if (!this.engineOn) c = { ...c, throttle: 0 }
     const m = MODES[this.mode]
     const fx = Math.sin(this.heading)
     const fz = Math.cos(this.heading)
@@ -323,7 +330,9 @@ export class Car {
     const gearNum = Math.min(5, Math.floor(af / bands) + 1)
     this.gear = this.forward < -0.4 ? 'R' : af < 0.25 && c.throttle === 0 ? 'N' : String(gearNum)
     const targetRpm = 0.16 + 0.84 * Math.min(1, (af - (gearNum - 1) * bands) / bands) * (0.55 + 0.45 * Math.max(c.throttle, 0.3))
-    this.rpm += (Math.max(targetRpm, 0.14 + c.throttle * 0.3) - this.rpm) * Math.min(1, dt * 9)
+    const wantRpm = this.engineOn ? Math.max(targetRpm, 0.14 + c.throttle * 0.3) : 0
+    this.rpm += (wantRpm - this.rpm) * Math.min(1, dt * (this.engineOn ? 9 : 4))
+    if (!this.engineOn) this.gear = '—'
 
     // Visuals: wheels, lights.
     for (const w of this.wheelSpinners) w.rotation.x += (this.forward * dt) / WHEEL_R
